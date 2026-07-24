@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pronounce — say it right</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0d3b3e" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:ital,wght@0,400;0,500;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Fraunces:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <a href="#" class="wordmark" id="homeLink" aria-label="Go home">
+      <span class="wordmark-name">pronounce</span>
+      <span class="wordmark-phonetic">/pruh-nowns/</span>
+    </a>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="modeToggleBtn" aria-label="Switch to dark mode" title="Switch to dark mode">
+        <svg id="modeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.5" />
+          <path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" />
+        </svg>
+        <svg id="modeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true" hidden>
+          <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+        </svg>
+      </button>
+
+      <div class="settings-wrap">
+        <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.5 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.5 2.5h4l.5-2.5a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4z" />
+          </svg>
+        </button>
+
+        <div class="settings-panel" id="settingsPanel" hidden>
+          <div class="settings-section">
+            <span class="settings-label">theme</span>
+            <div class="theme-swatches">
+              <button type="button" class="swatch swatch-cyan" data-theme="cyan" aria-label="Cyan theme" title="Cyan"></button>
+              <button type="button" class="swatch swatch-paper" data-theme="paper" aria-label="Paper theme" title="Paper"></button>
+              <button type="button" class="swatch swatch-rose" data-theme="rose" aria-label="Rose theme" title="Rose"></button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <span class="settings-label">background</span>
+            <div class="settings-row">
+              <button type="button" class="settings-link" id="bgBtn">choose photo</button>
+              <button type="button" class="settings-link" id="bgRemoveBtn" hidden>remove</button>
+            </div>
+            <input type="file" id="bgFileInput" accept="image/*" hidden />
+          </div>
+
+          <div class="settings-section">
+            <span class="settings-label">font</span>
+            <div class="font-options" id="fontOptions"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="stage">
+
+    <!-- home / empty state -->
+    <section class="screen screen-home is-active" id="screenHome">
+      <div class="search-wrap">
+        <form class="search search-hero" id="searchFormHero">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" width="20" height="20" aria-hidden="true">
+            <circle cx="10" cy="10" r="7" /><path d="m21 21-6-6" />
+          </svg>
+          <input type="text" id="searchInputHero" class="search-input" placeholder="search a word..."
+                 autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Search a word" />
+          <button type="button" class="mic-btn" id="micBtnHero" aria-label="Search by voice" title="Search by voice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+        </form>
+        <ul class="suggestions" id="suggestionsHero" hidden></ul>
+      </div>
+      <p class="hint">type any word to hear how it's said</p>
+      <div class="recent" id="recentWrap" hidden>
+        <div class="recent-head">
+          <span class="recent-label">recent</span>
+          <button type="button" class="recent-clear" id="recentClearBtn">clear</button>
+        </div>
+        <div class="recent-chips" id="recentChips"></div>
+      </div>
+    </section>
+
+    <!-- result state -->
+    <section class="screen screen-result" id="screenResult">
+      <div class="search-wrap">
+        <form class="search search-slim" id="searchFormSlim">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" width="17" height="17" aria-hidden="true">
+            <circle cx="10" cy="10" r="7" /><path d="m21 21-6-6" />
+          </svg>
+          <input type="text" id="searchInputSlim" class="search-input" placeholder="search another word..."
+                 autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Search a word" />
+          <button type="button" class="mic-btn" id="micBtnSlim" aria-label="Search by voice" title="Search by voice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
+            </svg>
+          </button>
+          <button type="button" class="clear-btn" id="clearBtn" aria-label="Clear search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" width="15" height="15" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </form>
+        <ul class="suggestions" id="suggestionsSlim" hidden></ul>
+      </div>
+
+      <div class="card" id="resultCard" hidden>
+        <h1 class="word" id="wordEl">ikigai</h1>
+        <div class="phonetic-row">
+          <span class="phonetic" id="phoneticEl">/ik-ee-guy/</span>
+          <button class="speak-btn" id="speakBtn" aria-label="Play pronunciation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="21" height="21" aria-hidden="true">
+              <path d="M15 8a5 5 0 0 1 0 8" /><path d="M17.7 5a9 9 0 0 1 0 14" />
+              <path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5z" />
+            </svg>
+          </button>
+          <button class="share-btn" id="shareBtn" aria-label="Share this word">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="19" height="19" aria-hidden="true">
+              <circle cx="18" cy="5" r="2.5" />
+              <circle cx="6" cy="12" r="2.5" />
+              <circle cx="18" cy="19" r="2.5" />
+              <path d="M8.2 10.8 15.8 6.2" />
+              <path d="M8.2 13.2 15.8 17.8" />
+            </svg>
+          </button>
+        </div>
+        <div class="rule"></div>
+        <div id="meaningsEl"></div>
+      </div>
+
+      <div class="card notfound" id="notFoundCard" hidden>
+        <p class="notfound-title" id="notFoundTitle">hmm...</p>
+        <div class="rule rule-muted"></div>
+        <p class="notfound-text" id="notFoundText">we couldn't find that word. check the spelling and try again</p>
+      </div>
+
+      <div class="card loading" id="loadingCard" hidden>
+        <p class="loading-text">looking it up<span class="dots" aria-hidden="true"></span></p>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
