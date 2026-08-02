@@ -101,7 +101,7 @@ body {
   to { transform: rotate(180deg); }
 }
 
-.settings-wrap { position: relative; }
+.settings-wrap, .help-wrap { position: relative; }
 
 .settings-panel {
   position: absolute;
@@ -166,6 +166,8 @@ body {
   line-height: 1.5;
   color: var(--faint);
 }
+.attribution-text + .attribution-text { margin-top: 0.6rem; }
+.attribution-text strong { color: var(--muted); font-weight: 600; }
 .attribution-text a {
   color: var(--muted);
   text-decoration: underline;

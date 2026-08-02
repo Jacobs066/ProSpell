@@ -160,6 +160,7 @@ function closeSettingsPanel() {
 
 settingsBtn.addEventListener("click", (e) => {
   e.stopPropagation();
+  closeInstallPanel();
   settingsPanel.hidden = !settingsPanel.hidden;
   settingsBtn.classList.add("is-spinning");
 });
@@ -170,9 +171,31 @@ settingsBtn.addEventListener("animationend", () => {
 
 settingsPanel.addEventListener("click", (e) => e.stopPropagation());
 
-document.addEventListener("click", () => closeSettingsPanel());
+/* ---------------- install-help panel ---------------- */
+const installBtn = document.getElementById("installBtn");
+const installPanel = document.getElementById("installPanel");
+
+function closeInstallPanel() {
+  installPanel.hidden = true;
+}
+
+installBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  closeSettingsPanel();
+  installPanel.hidden = !installPanel.hidden;
+});
+
+installPanel.addEventListener("click", (e) => e.stopPropagation());
+
+document.addEventListener("click", () => {
+  closeSettingsPanel();
+  closeInstallPanel();
+});
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeSettingsPanel();
+  if (e.key === "Escape") {
+    closeSettingsPanel();
+    closeInstallPanel();
+  }
 });
 
 /* ---------------- elements ---------------- */

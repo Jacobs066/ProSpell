@@ -1,6 +1,6 @@
 "use strict";
 
-const SHELL_CACHE = "pronounce-shell-v6";
+const SHELL_CACHE = "pronounce-shell-v7";
 const DATA_CACHE = "pronounce-data-v1";
 
 const SHELL_ASSETS = [
