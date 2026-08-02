@@ -161,6 +161,19 @@ body {
 }
 .settings-link:hover, .settings-link:focus-visible { text-decoration-color: var(--text); }
 
+.attribution-text {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--faint);
+}
+.attribution-text a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--line);
+}
+.attribution-text a:hover, .attribution-text a:focus-visible { text-decoration-color: var(--text); }
+
 .font-options { display: flex; flex-direction: column; gap: 0.4rem; }
 
 .font-option {

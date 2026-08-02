@@ -1,7 +1,7 @@
 "use strict";
 
-const SHELL_CACHE = "pronounce-shell-v5";
-const API_CACHE = "pronounce-api-v1";
+const SHELL_CACHE = "pronounce-shell-v6";
+const DATA_CACHE = "pronounce-data-v1";
 
 const SHELL_ASSETS = [
   "./",
@@ -29,7 +29,7 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== SHELL_CACHE && key !== API_CACHE)
+            .filter((key) => key !== SHELL_CACHE && key !== DATA_CACHE)
             .map((key) => caches.delete(key))
         )
       )
@@ -41,26 +41,28 @@ self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
   const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return; // Google Fonts etc: pass through untouched
 
-  if (url.origin === self.location.origin) {
-    // app shell: cache-first, network fallback
+  if (url.pathname.includes("/data/")) {
+    // static word dataset shards: cache-first (they only change on a new ingest run),
+    // and populate the cache as shards get fetched so repeat/offline lookups are instant
     event.respondWith(
-      caches.match(event.request).then((cached) => cached || fetch(event.request))
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((res) => {
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(DATA_CACHE).then((cache) => cache.put(event.request, copy));
+          }
+          return res;
+        });
+      })
     );
     return;
   }
 
-  if (url.hostname === "api.dictionaryapi.dev") {
-    // dictionary lookups: network-first so entries stay fresh, cached fallback for offline
-    event.respondWith(
-      fetch(event.request)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(API_CACHE).then((cache) => cache.put(event.request, copy));
-          return res;
-        })
-        .catch(() => caches.match(event.request))
-    );
-  }
-  // everything else (Google Fonts, Datamuse suggestions, speech APIs): pass through untouched
+  // app shell: cache-first, network fallback
+  event.respondWith(
+    caches.match(event.request).then((cached) => cached || fetch(event.request))
+  );
 });

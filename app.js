@@ -307,7 +307,6 @@ const SUGGEST_MAX = 8;
 
 function setupSuggestions(input, listEl, onSelect) {
   let debounceTimer = null;
-  let abortController = null;
   let items = [];
   let activeIndex = -1;
 
@@ -350,20 +349,12 @@ function setupSuggestions(input, listEl, onSelect) {
   }
 
   async function fetchSuggestions(prefix) {
-    if (abortController) abortController.abort();
-    abortController = new AbortController();
     try {
-      const res = await fetch(
-        "https://api.datamuse.com/words?sp=" + encodeURIComponent(prefix) + "*&max=" + SUGGEST_MAX,
-        { signal: abortController.signal }
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      renderList(
-        data.map((d) => d.word).filter((w) => w !== prefix && /^[a-z'-]+$/.test(w))
-      );
+      const shard = await fetchAcShard(shardKeyFor(prefix));
+      const matches = shard.filter((w) => w.startsWith(prefix) && w !== prefix);
+      renderList(matches.slice(0, SUGGEST_MAX));
     } catch (_) {
-      // aborted or offline; leave list as-is
+      // shard fetch failed (offline); leave list as-is
     }
   }
 
@@ -452,7 +443,37 @@ function setupMic(button, input, onResult) {
 setupMic(document.getElementById("micBtnHero"), inputHero, (word) => handleSearch(word));
 setupMic(document.getElementById("micBtnSlim"), inputSlim, (word) => handleSearch(word));
 
-/* ---------------- dictionary API ---------------- */
+/* ---------------- local dictionary dataset ---------------- */
+const shardCache = new Map();
+
+function shardKeyFor(word) {
+  return word.length === 1 ? "_" + word : word.slice(0, 2);
+}
+
+function fetchShard(key) {
+  if (shardCache.has(key)) return shardCache.get(key);
+  const promise = fetch("data/entries/" + key + ".json").then((res) => {
+    if (res.status === 404) return {};
+    if (!res.ok) throw new Error("shard fetch failed: " + res.status);
+    return res.json();
+  });
+  shardCache.set(key, promise);
+  return promise;
+}
+
+const acShardCache = new Map();
+
+function fetchAcShard(key) {
+  if (acShardCache.has(key)) return acShardCache.get(key);
+  const promise = fetch("data/ac/" + key + ".json").then((res) => {
+    if (res.status === 404) return [];
+    if (!res.ok) throw new Error("autocomplete shard fetch failed: " + res.status);
+    return res.json();
+  });
+  acShardCache.set(key, promise);
+  return promise;
+}
+
 function showNotFound(reason) {
   if (reason === "network") {
     notFoundTitle.textContent = "offline?";
@@ -470,30 +491,16 @@ async function lookUp(word) {
   currentAudioUrl = null;
 
   try {
-    const res = await fetch(
-      "https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word)
-    );
-    if (!res.ok) {
-      showNotFound(res.status === 404 ? "word" : "network");
+    const shard = await fetchShard(shardKeyFor(word));
+    const entry = shard[word];
+    if (!entry) {
+      showNotFound("word");
       return;
     }
-    const data = await res.json();
-    renderEntry(data[0], word);
+    renderEntry(entry, word);
   } catch (_) {
     showNotFound("network");
   }
-}
-
-function pickPhonetic(entry) {
-  // prefer a phonetic that has both text and audio, then text only
-  const list = entry.phonetics || [];
-  const withBoth = list.find((p) => p.text && p.audio);
-  const withAudio = list.find((p) => p.audio);
-  const withText = list.find((p) => p.text);
-  return {
-    text: (withBoth && withBoth.text) || entry.phonetic || (withText && withText.text) || "",
-    audio: (withBoth && withBoth.audio) || (withAudio && withAudio.audio) || null,
-  };
 }
 
 function appendRelation(label, words) {
@@ -509,42 +516,38 @@ function appendRelation(label, words) {
 }
 
 function renderEntry(entry, word) {
-  wordEl.textContent = entry.word || word;
-
-  const ph = pickPhonetic(entry);
-  phoneticEl.textContent = ph.text || "/" + word + "/";
-  currentAudioUrl = ph.audio
-    ? (ph.audio.startsWith("//") ? "https:" + ph.audio : ph.audio)
-    : null;
+  wordEl.textContent = entry.w || word;
+  phoneticEl.textContent = entry.ipa || "/" + word + "/";
+  currentAudioUrl = null; // dataset carries no audio; speak button falls back to speechSynthesis
 
   meaningsEl.innerHTML = "";
-  const meanings = (entry.meanings || []).slice(0, 3);
-  meanings.forEach((m) => {
-    const def = m.definitions && m.definitions[0];
-    if (!def) return;
-
+  (entry.s || []).forEach((sense) => {
     const pos = document.createElement("p");
     pos.className = "pos";
-    pos.textContent = m.partOfSpeech || "";
+    pos.textContent = sense.p || "";
+    if (sense.t && sense.t.length) {
+      const tag = document.createElement("span");
+      tag.className = "register-tag";
+      tag.textContent = " · " + sense.t.join(", ");
+      pos.appendChild(tag);
+    }
     meaningsEl.appendChild(pos);
 
     const d = document.createElement("p");
     d.className = "definition";
-    d.textContent = def.definition;
+    d.textContent = sense.d;
     meaningsEl.appendChild(d);
 
-    if (def.example) {
+    if (sense.e) {
       const ex = document.createElement("p");
       ex.className = "example";
-      ex.textContent = "\u201C" + def.example + "\u201D";
+      ex.textContent = "\u201C" + sense.e + "\u201D";
       meaningsEl.appendChild(ex);
     }
-
-    const synonyms = (m.synonyms && m.synonyms.length ? m.synonyms : def.synonyms) || [];
-    const antonyms = (m.antonyms && m.antonyms.length ? m.antonyms : def.antonyms) || [];
-    appendRelation("synonyms", synonyms);
-    appendRelation("antonyms", antonyms);
   });
+
+  appendRelation("synonyms", entry.syn);
+  appendRelation("antonyms", entry.ant);
 
   showCard(resultCard);
   addRecent(wordEl.textContent);

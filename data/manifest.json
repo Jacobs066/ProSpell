@@ -1,0 +1,12 @@
+{
+  "generated": "2026-08-02T10:40:15Z",
+  "source": "https://kaikki.org/dictionary/English/kaikki.org-dictionary-English.jsonl.gz",
+  "license": "Wiktionary (CC BY-SA 4.0), via Kaikki.org/Wiktextract",
+  "headword_count": 719264,
+  "slang_tagged_count": 40076,
+  "entries_total_bytes": 170476196,
+  "largest_shard": {
+    "key": "co",
+    "bytes": 4727196
+  }
+}
